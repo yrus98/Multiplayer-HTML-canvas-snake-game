@@ -3,25 +3,28 @@ var fx , fy;
 var n = 5;
 var scl = 20;
 var enemies = [];
-var id;
+var uid;
 var socket;
+var input;
+var button;
+var p;
+var connected = false;
+
 
 function setup() {
   createCanvas(800, 400);
-  frameRate(20);
-  fx=width/2;
-  fy=height/2;
-  socket = io.connect('https://yrus-snake.herokuapp.com/');
-
-  var x, y;
-  x = scl * floor(random(width / scl));
-  y = scl * floor(random(height / scl));
-  for (var k = 0; k <= n - 1; k++) {
-    body[k] = new Body(x - k * scl, y, 1, 0);
-  }
-  showFood();
-  id = socket.id;
-  sendData();
+  frameRate(15);
+  p = createP('Enter your Username :<br>');
+  input = createInput('Python');
+  button = createButton("Let's Go!!");
+  button.mousePressed(function(){
+    uid = input.value();
+    button.hide();
+    input.hide();
+    p.html(uid);
+    connected = true;
+    setInterval(sendData, 100);
+      socket = io.connect('http://localhost:3000/');
 
   socket.on('loc', 
     function(data) {
@@ -31,14 +34,34 @@ function setup() {
           return;
         }
       }
-      enemies.push(new Enemy(data.id));
+      enemies.push(new Enemy(data.id, data.sid));
       enemies[enemies.length-1].get(data);
   });
   socket.on('newfood',function(data){
     fx = data.fx;
     fy = data.fy;
   });
-  setInterval(sendData, 200);
+  socket.on('left',
+    function(data){
+      for(var i=0;i<enemies.length;i++){
+        if(enemies[i].sid==data) enemies.splice(i,1);
+      }
+    });
+
+  });
+  fx=width/2;
+  fy=height/2;
+  // socket = io.connect('https://yrus-snake.herokuapp.com/');
+
+  var x, y;
+  x = scl * floor(random(width / scl));
+  y = scl * floor(random(height / scl));
+  for (var k = 0; k <= n - 1; k++) {
+    body[k] = new Body(x - k * scl, y, 1, 0);
+  }
+  showFood();
+
+  // setInterval(sendData, 200);
 }
 
 function draw() {
@@ -70,11 +93,11 @@ function keyPressed() {
   else if (keyCode === RIGHT_ARROW) move(1, 0);
 }
 
-function touchMoved(){
-  if (ptouchX - touchX < -10) move(1,0);
-  else if (ptouchX - touchX > 10) move(-1,0);
-  else if (ptouchY - touchY < -10) move(0,1);
-  else if (ptouchY - touchY > 10) move(0,-1);
+function mouseClicked(){
+  if (mouseX > 3*width/4) move(1,0);
+  else if (mouseX < width/4) move(-1,0);
+  else if (mouseY > height/2) move(0,1);
+  else if (mouseY < height/2) move(0,-1);
 }
 
 function move(i, j) {
@@ -99,20 +122,24 @@ function eat() {
       x : scl * floor(random(width) / scl),
       y : scl * floor(random(height) / scl)
     };
-    socket.emit('eat',data);
+    if(connected) socket.emit('eat',data);
+    else {
+      fx=data.x;
+      fy=data.y;
+    }
   }
 }
 
 function check() {
   for (var i = 1; i < body.length; i++) {
     var d = dist(body[0].x, body[0].y, body[i].x, body[i].y);
-    if (d < 10) {
+    if (d < scl) {
       body.splice(i, body.length - i);
       break;
     }
     for(var j=0; j < enemies.length; j++) {
        var d2 = dist(enemies[j].bodyX[0], enemies[j].bodyY[0], body[i].x, body[i].y);
-       if (d2 < 10) {
+       if (d2 < scl) {
         body.splice(i, body.length - i);
         break;
         }
@@ -125,9 +152,11 @@ function sendData() {
   var data = {
     x : [],
     y : [],
-    id
+    id : 0,
+    sid : 0
   };
-  data.id = id;
+  data.id = uid;
+  data.sid = socket.id;
   for (var i = 0; i < body.length; i++) {
     data.x[i] = body[i].x;
     data.y[i] = body[i].y;

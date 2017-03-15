@@ -39,6 +39,7 @@ io.sockets.on('connection',
     });
     
     socket.on('disconnect', function() {
+      socket.broadcast.emit('left',socket.id);
       console.log(socket.id + " : Client has disconnected");
     });
   }
