@@ -24,7 +24,8 @@ function setup() {
     p.html(uid);
     connected = true;
     setInterval(sendData, 100);
-      socket = io.connect('http://localhost:3000/');
+      // socket = io.connect('http://localhost:3000/');
+  socket = io.connect('https://yrus-snake.herokuapp.com/');
 
   socket.on('loc', 
     function(data) {
@@ -51,7 +52,6 @@ function setup() {
   });
   fx=width/2;
   fy=height/2;
-  // socket = io.connect('https://yrus-snake.herokuapp.com/');
 
   var x, y;
   x = scl * floor(random(width / scl));
