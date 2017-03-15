@@ -82,6 +82,7 @@ function draw() {
   for (i = 0; i < enemies.length; i++) {
     enemies[i].show();
   }
+  joystick();
   check();
   eat();
 }
@@ -93,11 +94,32 @@ function keyPressed() {
   else if (keyCode === RIGHT_ARROW) move(1, 0);
 }
 
-function mouseClicked(){
-  if (mouseX > 3*width/4) move(1,0);
-  else if (mouseX < width/4) move(-1,0);
-  else if (mouseY > height/2) move(0,1);
-  else if (mouseY < height/2) move(0,-1);
+function joystick(){
+  noStroke();
+  fill(120,70);
+  ellipseMode(CENTER);
+  ellipse(width-80,height-80,80);
+  fill(100,70);
+  ellipse(width-80,height-80, 30);
+  stroke(0);
+}
+
+function mouseDragged(){
+  var diffX,diffY;
+  noStroke();
+  diffX = mouseX - width+80;
+  diffY = mouseY - height+80;
+  if(abs(diffX) > abs(diffY)){
+    if(diffX > 0) move(1, 0);
+    else move(-1, 0);
+    ellipse(mouseX, mouseY, 30);
+  }
+  else if(abs(diffX) < abs(diffY)){
+    if(diffY > 0) move(0, 1);
+    else move(0, -1);
+    ellipse(mouseX, mouseY, 30);
+  }
+  stroke(0);
 }
 
 function move(i, j) {
