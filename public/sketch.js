@@ -24,8 +24,8 @@ function setup() {
     input.hide();
     p.html(uid);
 
-    socket = io.connect('http://localhost:3000/');
-// ===>    socket = io.connect('https://yrus-snake.herokuapp.com/');  // <===
+    // socket = io.connect('http://localhost:3000/');
+    socket = io.connect('https://yrus-snake.herokuapp.com/');  // <===
 
     socket.on('connect', function(){
     //initialize again
