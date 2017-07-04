@@ -16,17 +16,29 @@ function listen() {
 
 app.use(express.static('public'));
 
-var io = require('socket.io')(server);
-
+var socket = require('socket.io');
+var io = socket(server);
 io.sockets.on('connection',
 
   function (socket) {
   
     console.log("New client: " + socket.id); 
 
-    socket.on('loc',
+    socket.on('new',
       function(data) {
-        socket.broadcast.emit('loc', data);        
+    // console.log('received new : ' + data );
+
+        socket.broadcast.emit('new', data);        
+    });
+    socket.on('move',
+      function(data){
+        // // console.log('received move: ' + data.sid );
+      socket.broadcast.emit('move', data); 
+      // // console.log('Sending move: ' + data.sid );       
+    });
+    socket.on('cut',
+      function(data) {
+        socket.broadcast.emit('cut', data);        
     });
 
     socket.on('eat',
@@ -38,9 +50,10 @@ io.sockets.on('connection',
       io.sockets.emit('newfood', food);
     });
     
-    socket.on('disconnect', function() {
-      socket.broadcast.emit('left',socket.id);
-      console.log(socket.id + " : Client has disconnected");
+    socket.on('disconnect', 
+      function() {
+        socket.broadcast.emit('quit',socket.id);
+        console.log(socket.id + " : Client has disconnected");
     });
   }
 );
